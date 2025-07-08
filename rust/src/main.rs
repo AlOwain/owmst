@@ -13,7 +13,6 @@ fn main() {
         .resizable()
         .build();
 
-    let arena = Arena {};
     let mut striker = Striker { pos: (0.5, 0.5) };
     let core = Core {
         pos: (0.5, 0.5),
@@ -23,6 +22,7 @@ fn main() {
 
     while !rh.window_should_close() {
         // TODO: Instead of taking a step at each second in the thread we should add the input to a queue that is processed in a seperate thread.
+        // TODO: Adjust movement to be every tick.
         striker.step(striker.input(&rh));
         let scr_dim = (rh.get_screen_height() as f32, rh.get_screen_width() as f32);
         let mut dh = rh.begin_drawing(&thread);
@@ -30,6 +30,6 @@ fn main() {
         dh.clear_background(Color::WHITE);
         striker.draw(&mut dh, scr_dim);
         core.draw(&mut dh, scr_dim);
-        arena.draw(&mut dh, scr_dim);
+        Arena::draw(&mut dh, scr_dim);
     }
 }
