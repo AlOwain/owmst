@@ -17,3 +17,7 @@ rust/target
 rust/.idea/
 
 # C
+c/build/
+
+# Odin
+
