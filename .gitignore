@@ -21,3 +21,4 @@ c/build/
 
 # Odin
 odin/odin
+odin/*.bin
