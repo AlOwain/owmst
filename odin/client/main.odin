@@ -45,36 +45,48 @@ main :: proc() {
 
 	gl.load_up_to(int(GL_MAJOR_VERSION), GL_MINOR_VERSION, glfw.gl_set_proc_address)
 
+	shader: u32 = ---
+	{
+		vertex_shader := shader_compile(&vertex_shader_src, gl.VERTEX_SHADER)
+		defer gl.DeleteShader(vertex_shader)
+
+		fragment_shader := shader_compile(&fragment_shader_src, gl.FRAGMENT_SHADER)
+		defer gl.DeleteShader(fragment_shader)
+
+		shader = gl.CreateProgram()
+		gl.AttachShader(shader, vertex_shader)
+		gl.AttachShader(shader, fragment_shader)
+		gl.LinkProgram(shader)
+		gl_check_errors(shader, gl.LINK_STATUS)
+	}
+
 	vertices: []f32 = {
 		-0.5, -0.5, 0.0,
 		0.5,  -0.5, 0.0,
 		0.0,   0.5, 0.0
 	};
 
-	vbo: u32 = ---
+	vbo, vao: u32 = ---, ---
+	gl.GenVertexArrays(1, &vao)
 	gl.GenBuffers(1, &vbo)
+	gl.BindVertexArray(vao)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, size_of(vertices), &vertices, gl.STATIC_DRAW)
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 3 * size_of(f32), 0)
+	gl.EnableVertexAttribArray(0)
 
-	vertex_shader := shader_compile(&vertex_shader_src, gl.VERTEX_SHADER)
-	defer gl.DeleteShader(vertex_shader)
-
-	fragment_shader := shader_compile(&fragment_shader_src, gl.FRAGMENT_SHADER)
-	defer gl.DeleteShader(fragment_shader)
-
-	shader_program: u32 = ---
-	shader_program = gl.CreateProgram()
-	gl.AttachShader(shader_program, vertex_shader)
-	gl.AttachShader(shader_program, fragment_shader)
-	gl.LinkProgram(shader_program)
-
-	gl_check_errors(shader_program, gl.LINK_STATUS)
-	gl.UseProgram(shader_program)
+	// Unbind Vertex Buffer Object and Vertex Array Object
+	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
+	gl.BindVertexArray(0)
 
 	for !glfw.WindowShouldClose(window) && running {
         glfw.PollEvents()
 
-        gl.ClearColor(1.0, 1.0, 1.0, 1.0)
+        gl.UseProgram(shader)
+        gl.BindVertexArray(vao)
+        gl.DrawArrays(gl.TRIANGLES, 0, 3)
+
+        gl.ClearColor(0.3, 0.2, 0.2, 1.0)
         gl.Clear(gl.COLOR_BUFFER_BIT)
 
         glfw.SwapBuffers(window)
