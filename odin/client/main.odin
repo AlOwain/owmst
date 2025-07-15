@@ -61,6 +61,7 @@ main :: proc() {
 	}
 
 	vertices: []f32 = {
+// 		 X		Y	 Z
 		-0.5, -0.5, 0.0,
 		0.5,  -0.5, 0.0,
 		0.0,   0.5, 0.0
@@ -71,7 +72,7 @@ main :: proc() {
 	gl.GenBuffers(1, &vbo)
 	gl.BindVertexArray(vao)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, size_of(vertices), &vertices, gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, len(vertices) * size_of(vertices[0]), &vertices[0], gl.STATIC_DRAW)
 	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 3 * size_of(f32), 0)
 	gl.EnableVertexAttribArray(0)
 
@@ -82,12 +83,12 @@ main :: proc() {
 	for !glfw.WindowShouldClose(window) && running {
         glfw.PollEvents()
 
+        gl.ClearColor(1.0, 1.0, 1.0, 1.0)
+        gl.Clear(gl.COLOR_BUFFER_BIT)
+
         gl.UseProgram(shader)
         gl.BindVertexArray(vao)
         gl.DrawArrays(gl.TRIANGLES, 0, 3)
-
-        gl.ClearColor(0.3, 0.2, 0.2, 1.0)
-        gl.Clear(gl.COLOR_BUFFER_BIT)
 
         glfw.SwapBuffers(window)
 	}
