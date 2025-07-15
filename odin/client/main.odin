@@ -68,11 +68,11 @@ main :: proc() {
 		gl_check_errors(shader, gl.LINK_STATUS)
 	}
 
-	vertices: []f32 = {
-// 		 X		Y	 Z
+	vertices := [?]f32{
+// 		  X		Y	 Z
 		-0.5, -0.5, 0.0,
-		0.5,  -0.5, 0.0,
-		0.0,   0.5, 0.0
+		 0.5, -0.5, 0.0,
+		 0.0,  0.5, 0.0
 	};
 
 	vbo, vao: u32 = ---, ---
