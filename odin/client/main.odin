@@ -10,6 +10,10 @@ import "../shared"
 
 GL_MAJOR_VERSION : c.int : 3
 GL_MINOR_VERSION :: 3
+
+SCREEN_WIDTH :: 800
+SCREEN_HEIGHT :: 600
+
 running := false
 
 vertex_shader_src := #load("./shaders/0.vert", cstring)
@@ -28,7 +32,7 @@ main :: proc() {
 	glfw.WindowHint(glfw.CONTEXT_VERSION_MINOR, GL_MINOR_VERSION)
 	glfw.WindowHint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
 
-	window := glfw.CreateWindow(800, 400, "OWMst", nil, nil)
+	window := glfw.CreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "OWMst", nil, nil)
 
 	if nil == window {
 		fmt.println("NO WINDOW")
@@ -44,6 +48,10 @@ main :: proc() {
 	glfw.SetFramebufferSizeCallback(window, cb_window_resize)
 
 	gl.load_up_to(int(GL_MAJOR_VERSION), GL_MINOR_VERSION, glfw.gl_set_proc_address)
+	{
+		width, height := glfw.GetFramebufferSize(window)
+		gl.Viewport(0, 0, width, height)
+	}
 
 	shader: u32 = ---
 	{
