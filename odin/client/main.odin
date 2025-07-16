@@ -70,26 +70,44 @@ main :: proc() {
 
 	vertices := [?]f32 {
 // 		  X		Y	 Z
-		-0.5, -0.5, 0.0,
-		 0.5, -0.5, 0.0,
-		 0.0,  0.5, 0.0
+		 0.5,  0.5, 0.0, // RT
+		 0.5, -0.5, 0.0, // RB
+		-0.5, -0.5, 0.0, // LB
+		-0.5,  0.5, 0.0, // LT
+	}
+	indices := [?]u32 {
+		3, 2, 1, // He put: 1, 2, 3		Isn't this clockwise? How does it work?!
+		3, 1, 0, // He put: 0, 1, 3		But counter-clockwise
 	}
 
-	vbo, vao: u32 = ---, ---
+	vbo, vao, ebo: u32 = ---, ---, ---
 	{
-		gl.GenBuffers(1, &vbo)
-		gl.GenVertexArrays(1, &vao)
+		// TODO: Shouldn't you use:
+		// buf_arr := [2]u32
+		// gl.GenBuffers(2, &buf_arr)
+		// vbo := buf_arr[0]
+		// ebo := buf_arr[1]
 
-		gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-		defer gl.BindBuffer(gl.ARRAY_BUFFER, 0)
+		gl.GenVertexArrays(1, &vao)
+		gl.GenBuffers(1, &vbo)
+		gl.GenBuffers(1, &ebo)
+
 		gl.BindVertexArray(vao)
 		defer gl.BindVertexArray(0)
 
-		gl.BufferData(gl.ARRAY_BUFFER, size_of(vertices), &vertices[0], gl.STATIC_DRAW)
+		gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+		defer gl.BindBuffer(gl.ARRAY_BUFFER, 0)
+		gl.BufferData(gl.ARRAY_BUFFER, size_of(vertices), &vertices, gl.STATIC_DRAW)
+
+		gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
+		defer gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
+		gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, size_of(indices), &indices, gl.STATIC_DRAW)
+
 		gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 3 * size_of(f32), 0)
 		gl.EnableVertexAttribArray(0)
 	}
 	defer gl.DeleteBuffers(1, &vbo)
+	defer gl.DeleteBuffers(1, &ebo)
 	defer gl.DeleteVertexArrays(1, &vao)
 
 	for !glfw.WindowShouldClose(window) && running {
@@ -103,7 +121,11 @@ main :: proc() {
 
 		gl.BindVertexArray(vao)
 		defer gl.BindVertexArray(0)
-		gl.DrawArrays(gl.TRIANGLES, 0, 3)
+
+		gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
+		defer gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
+
+		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil);
 
 		glfw.SwapBuffers(window)
 	}
