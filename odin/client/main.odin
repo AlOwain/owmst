@@ -94,11 +94,13 @@ main :: proc() {
 
 	for !glfw.WindowShouldClose(window) && running {
 		glfw.PollEvents()
+		input(&window)
 
 		gl.ClearColor(1.0, 1.0, 1.0, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
 		gl.UseProgram(shader)
+
 		gl.BindVertexArray(vao)
 		defer gl.BindVertexArray(0)
 		gl.DrawArrays(gl.TRIANGLES, 0, 3)

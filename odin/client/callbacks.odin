@@ -13,9 +13,24 @@ cb_error :: proc "c" (code: i32, desc: cstring) {
     fmt.println(code, desc);
 }
 
-cb_input :: proc "c" (windw: glfw.WindowHandle, key, scancode, action, mods: i32) {
-	running = false
-	os.exit(1)
+wireframe_rendering := false
+cb_input :: proc "c" (window: glfw.WindowHandle, key, scancode, action, mods: i32) {
+	if action != glfw.PRESS {
+		return
+	}
+
+	switch key {
+	case glfw.KEY_ESCAPE:
+		running = false
+		os.exit(1)
+	case glfw.KEY_F2:
+		defer wireframe_rendering = !wireframe_rendering
+		if wireframe_rendering {
+			gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
+		} else {
+			gl.PolygonMode(gl.FRONT_AND_BACK, gl.FILL)
+		}
+	}
 }
 
 cb_window_resize :: proc "c" (window: glfw.WindowHandle, width, height: i32) {
