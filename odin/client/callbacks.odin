@@ -24,7 +24,7 @@ cb_input :: proc "c" (window: glfw.WindowHandle, key, scancode, action, mods: i3
 		running = false
 		os.exit(1)
 	case glfw.KEY_F2:
-		defer wireframe_rendering = !wireframe_rendering
+		wireframe_rendering = !wireframe_rendering
 		if wireframe_rendering {
 			gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE)
 		} else {
