@@ -74,10 +74,12 @@ main :: proc() {
 		 0.5, -0.5, 0.0, // RB
 		-0.5, -0.5, 0.0, // LB
 		-0.5,  0.5, 0.0, // LT
+		 0.0,  1.0, 0.0, // CV
 	}
 	indices := [?]u32 {
 		3, 2, 1, // He put: 1, 2, 3		Isn't this clockwise? How does it work?!
 		3, 1, 0, // He put: 0, 1, 3		But counter-clockwise
+		0, 4, 3, // This is my solution for Exercise 1
 	}
 
 	vbo, vao, ebo: u32 = ---, ---, ---
@@ -125,7 +127,7 @@ main :: proc() {
 		gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
 		defer gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
 
-		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil);
+		gl.DrawElements(gl.TRIANGLES, 9, gl.UNSIGNED_INT, nil);
 
 		glfw.SwapBuffers(window)
 	}
