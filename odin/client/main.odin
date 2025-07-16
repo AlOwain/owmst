@@ -26,7 +26,7 @@ main :: proc() {
 	}
 	defer glfw.Terminate()
 
-    glfw.SetErrorCallback(cb_error);
+    glfw.SetErrorCallback(cb_error)
 	glfw.WindowHint(glfw.RESIZABLE, 1)
 	glfw.WindowHint(glfw.CONTEXT_VERSION_MAJOR, GL_MAJOR_VERSION)
 	glfw.WindowHint(glfw.CONTEXT_VERSION_MINOR, GL_MINOR_VERSION)
@@ -68,36 +68,41 @@ main :: proc() {
 		gl_check_errors(shader, gl.LINK_STATUS)
 	}
 
-	vertices := [?]f32{
+	vertices := [?]f32 {
 // 		  X		Y	 Z
 		-0.5, -0.5, 0.0,
 		 0.5, -0.5, 0.0,
 		 0.0,  0.5, 0.0
-	};
+	}
 
 	vbo, vao: u32 = ---, ---
-	gl.GenVertexArrays(1, &vao)
-	gl.GenBuffers(1, &vbo)
-	gl.BindVertexArray(vao)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, size_of(vertices), &vertices[0], gl.STATIC_DRAW)
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 3 * size_of(f32), 0)
-	gl.EnableVertexAttribArray(0)
+	{
+		gl.GenBuffers(1, &vbo)
+		gl.GenVertexArrays(1, &vao)
 
-	// Unbind Vertex Buffer Object and Vertex Array Object
-	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
-	gl.BindVertexArray(0)
+		gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+		defer gl.BindBuffer(gl.ARRAY_BUFFER, 0)
+		gl.BindVertexArray(vao)
+		defer gl.BindVertexArray(0)
+
+		gl.BufferData(gl.ARRAY_BUFFER, size_of(vertices), &vertices[0], gl.STATIC_DRAW)
+		gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 3 * size_of(f32), 0)
+		gl.EnableVertexAttribArray(0)
+	}
+	defer gl.DeleteBuffers(1, &vbo)
+	defer gl.DeleteVertexArrays(1, &vao)
 
 	for !glfw.WindowShouldClose(window) && running {
-        glfw.PollEvents()
+		glfw.PollEvents()
 
-        gl.ClearColor(1.0, 1.0, 1.0, 1.0)
-        gl.Clear(gl.COLOR_BUFFER_BIT)
+		gl.ClearColor(1.0, 1.0, 1.0, 1.0)
+		gl.Clear(gl.COLOR_BUFFER_BIT)
 
-        gl.UseProgram(shader)
-        gl.BindVertexArray(vao)
-        gl.DrawArrays(gl.TRIANGLES, 0, 3)
+		gl.UseProgram(shader)
+		gl.BindVertexArray(vao)
+		defer gl.BindVertexArray(0)
+		gl.DrawArrays(gl.TRIANGLES, 0, 3)
 
-        glfw.SwapBuffers(window)
+		glfw.SwapBuffers(window)
 	}
 }
