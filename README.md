@@ -4,6 +4,14 @@ A 2D game, inspired by Omega Strikers.
 
 How could you expand the game into more fields, how could you make a MMORPG out out it?
 
+## Usage of Odin
+
+This is my very first time using Odin, I have not written or read anything about it, but I'll try to catch up as fast as possible!
+
+...I don't think I'm confident enough to build the server using Odin yet, I might finally have a project with two prevalent programming languages! If the Linux kernel can do it, why can't I?
+
+Although I won't ever duplicate work and I might need to, for instance, in the Physics of it all. I could just have a Rust wrapper on the Odin physics, given that it is highly scrutinized. I'm not sure all this seems right though.
+
 ## Game Design Theory
 
 ### General

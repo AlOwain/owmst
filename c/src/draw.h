@@ -1,1 +1,0 @@
-void draw(PlayerState *ps);
