@@ -6,8 +6,6 @@ import "vendor:glfw"
 import "core:c"
 import "core:fmt"
 
-import "../shared"
-
 GL_MAJOR_VERSION : c.int : 3
 GL_MINOR_VERSION :: 3
 
@@ -141,7 +139,7 @@ main :: proc() {
 		defer gl.BindBuffer(gl.ARRAY_BUFFER, 0)
 		gl.BufferData(gl.ARRAY_BUFFER, size_of(e2_vertices), &e2_vertices, gl.STATIC_DRAW)
 
-		gl.DrawArrays(gl.TRIANGLES, 8, 11);
+		gl.DrawArrays(gl.TRIANGLES, 0, 2);
 
 		glfw.SwapBuffers(window)
 	}
