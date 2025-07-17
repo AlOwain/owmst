@@ -88,14 +88,7 @@ main :: proc() {
 		3, 1, 0, // He put: 0, 1, 3		But counter-clockwise
 	}
 
-	e2_vertices := [?]f32 {
-// 		  X		Y	 Z
-		 0.5,  0.5, 0.0, // RT
-		-0.5,  0.5, 0.0, // LT
-		 0.0,  1.0, 0.0, // CV
-	}
-
-	vbo, vao, ebo, e2_vbo, e2_vao: u32 = ---, ---, ---, ---, ---
+	vbo, vao, ebo: u32 = ---, ---, ---
 	{
 		// TODO: Shouldn't you use:
 		// buf_arr := [2]u32
@@ -120,29 +113,10 @@ main :: proc() {
 
 		gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 3 * size_of(f32), 0)
 		gl.EnableVertexAttribArray(0)
-
-		// Exercise 2
-
-		gl.GenVertexArrays(1, &e2_vao)
-		gl.GenBuffers(1, &e2_vbo)
-
-		gl.BindVertexArray(e2_vao)
-		defer gl.BindVertexArray(0)
-
-		gl.BindBuffer(gl.ARRAY_BUFFER, e2_vbo)
-		defer gl.BindBuffer(gl.ARRAY_BUFFER, 0)
-		gl.BufferData(gl.ARRAY_BUFFER, size_of(e2_vertices), &e2_vertices, gl.STATIC_DRAW)
-
-		gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 3 * size_of(f32), 0)
-		gl.EnableVertexAttribArray(0)
-
 	}
 	defer gl.DeleteBuffers(1, &vbo)
 	defer gl.DeleteBuffers(1, &ebo)
 	defer gl.DeleteVertexArrays(1, &vao)
-
-	defer gl.DeleteBuffers(1, &e2_vbo)
-	defer gl.DeleteVertexArrays(1, &e2_vao)
 
 	for !glfw.WindowShouldClose(window) && running {
 		glfw.PollEvents()
@@ -161,14 +135,6 @@ main :: proc() {
 			defer gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
 
 			gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil);
-		}
-
-		gl.UseProgram(dbg_shader)
-
-		{
-			gl.BindVertexArray(e2_vao)
-			defer gl.BindVertexArray(0)
-			gl.DrawArrays(gl.TRIANGLES, 0, 3)
 		}
 
 		glfw.SwapBuffers(window)
