@@ -76,12 +76,12 @@ main :: proc() {
 		gl_check_errors(dbg_shader, gl.LINK_STATUS)
 	}
 
-	vertices := [?]f32 {
-// 		  X		Y	 Z
-		 0.5,  0.5, 0.0, // RT
-		 0.5, -0.5, 0.0, // RB
-		-0.5, -0.5, 0.0, // LB
-		-0.5,  0.5, 0.0, // LT
+	vertex_data := [?]f32 {
+		//X	   Y    Z      R   G  B
+		 .5,  .5,   0,     1,  0,  0, // RT
+		 .5, -.5,   0,     0,  1,  0, // RB
+		-.5, -.5,   0,     0,  0,  1, // LB
+		-.5,  .5,   0,     1,  0,  1, // LT
 	}
 	indices := [?]u32 {
 		3, 2, 1, // He put: 1, 2, 3		Isn't this clockwise? How does it work?!
@@ -99,14 +99,17 @@ main :: proc() {
 
 		gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
 		defer gl.BindBuffer(gl.ARRAY_BUFFER, 0)
-		gl.BufferData(gl.ARRAY_BUFFER, size_of(vertices), &vertices, gl.STATIC_DRAW)
+		gl.BufferData(gl.ARRAY_BUFFER, size_of(vertex_data), &vertex_data, gl.STATIC_DRAW)
 
 		gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
 		defer gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
 		gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, size_of(indices), &indices, gl.STATIC_DRAW)
 
-		gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 3 * size_of(f32), 0)
+		gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 6 * size_of(f32), 0)
 		gl.EnableVertexAttribArray(0)
+
+		gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 6 * size_of(f32), 3 * size_of(f32))
+		gl.EnableVertexAttribArray(1)
 	}
 	defer gl.DeleteBuffers(1, &vbo)
 	defer gl.DeleteBuffers(1, &ebo)
