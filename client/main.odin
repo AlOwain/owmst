@@ -90,12 +90,6 @@ main :: proc() {
 
 	vbo, vao, ebo: u32 = ---, ---, ---
 	{
-		// TODO: Shouldn't you use:
-		// buf_arr := [2]u32
-		// gl.GenBuffers(2, &buf_arr)
-		// vbo := buf_arr[0]
-		// ebo := buf_arr[1]
-
 		gl.GenVertexArrays(1, &vao)
 		gl.GenBuffers(1, &vbo)
 		gl.GenBuffers(1, &ebo)
