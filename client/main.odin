@@ -52,29 +52,8 @@ main :: proc() {
 		gl.Viewport(0, 0, width, height)
 	}
 
-	shader, dbg_shader: u32 = ---, ---
-	{
-		vertex_shader := shader_compile(&vertex_shader_src, gl.VERTEX_SHADER)
-		defer gl.DeleteShader(vertex_shader)
-
-		fragment_shader := shader_compile(&fragment_shader_src, gl.FRAGMENT_SHADER)
-		defer gl.DeleteShader(fragment_shader)
-
-		dbg_fragment_shader := shader_compile(&dbg_fragment_shader_src, gl.FRAGMENT_SHADER)
-		defer gl.DeleteShader(dbg_fragment_shader)
-
-		shader = gl.CreateProgram()
-		gl.AttachShader(shader, vertex_shader)
-		gl.AttachShader(shader, fragment_shader)
-		gl.LinkProgram(shader)
-		gl_check_errors(shader, gl.LINK_STATUS)
-
-		dbg_shader = gl.CreateProgram()
-		gl.AttachShader(dbg_shader, vertex_shader)
-		gl.AttachShader(dbg_shader, dbg_fragment_shader)
-		gl.LinkProgram(dbg_shader)
-		gl_check_errors(dbg_shader, gl.LINK_STATUS)
-	}
+	shader: u32 = create_shader(&vertex_shader_src, &fragment_shader_src)
+	dbg_shader: u32 = create_shader(&vertex_shader_src, &dbg_fragment_shader_src)
 
 	vertex_data := [?]f32 {
 		//X	   Y    Z      R   G  B
