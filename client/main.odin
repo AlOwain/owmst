@@ -16,6 +16,7 @@ running := false
 
 vertex_shader_src := #load("./shaders/0.vert", cstring)
 fragment_shader_src := #load("./shaders/1.frag", cstring)
+dbg_fragment_shader_src := #load("./shaders/dbg.frag", cstring)
 
 main :: proc() {
 	if !glfw.Init() {
@@ -51,7 +52,7 @@ main :: proc() {
 		gl.Viewport(0, 0, width, height)
 	}
 
-	shader: u32 = ---
+	shader, dbg_shader: u32 = ---, ---
 	{
 		vertex_shader := shader_compile(&vertex_shader_src, gl.VERTEX_SHADER)
 		defer gl.DeleteShader(vertex_shader)
@@ -59,11 +60,20 @@ main :: proc() {
 		fragment_shader := shader_compile(&fragment_shader_src, gl.FRAGMENT_SHADER)
 		defer gl.DeleteShader(fragment_shader)
 
+		dbg_fragment_shader := shader_compile(&dbg_fragment_shader_src, gl.FRAGMENT_SHADER)
+		defer gl.DeleteShader(dbg_fragment_shader)
+
 		shader = gl.CreateProgram()
 		gl.AttachShader(shader, vertex_shader)
 		gl.AttachShader(shader, fragment_shader)
 		gl.LinkProgram(shader)
 		gl_check_errors(shader, gl.LINK_STATUS)
+
+		dbg_shader = gl.CreateProgram()
+		gl.AttachShader(dbg_shader, vertex_shader)
+		gl.AttachShader(dbg_shader, dbg_fragment_shader)
+		gl.LinkProgram(dbg_shader)
+		gl_check_errors(dbg_shader, gl.LINK_STATUS)
 	}
 
 	vertices := [?]f32 {
