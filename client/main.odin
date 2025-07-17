@@ -95,15 +95,12 @@ main :: proc() {
 	defer gl.DeleteBuffers(1, &ebo)
 	defer gl.DeleteVertexArrays(1, &vao)
 
-	i: f32 = 0
 	for !glfw.WindowShouldClose(window) && running {
 		glfw.PollEvents()
 		input(&window)
 
 		gl.ClearColor(1.0, 1.0, 1.0, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
-		gl.Uniform1f(gl.GetUniformLocation(shader, "skew"), math.sin(i))
-		i += 0.01
 		gl.UseProgram(shader)
 
 		{
