@@ -9,8 +9,8 @@ import "core:fmt"
 GL_MAJOR_VERSION : c.int : 3
 GL_MINOR_VERSION :: 3
 
-SCREEN_WIDTH :: 800
-SCREEN_HEIGHT :: 600
+SCREEN_WIDTH :: 400
+SCREEN_HEIGHT :: 400
 
 running := false
 
