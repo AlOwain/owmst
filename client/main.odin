@@ -58,14 +58,14 @@ main :: proc() {
 
 	vertex_data := [?]f32 {
 		//X	   Y    Z      R   G  B
-		 .5,  .5,   0,     1,  0,  0, // RT
-		 .5, -.5,   0,     0,  1,  0, // RB
-		-.5, -.5,   0,     0,  0,  1, // LB
-		-.5,  .5,   0,     1,  0,  1, // LT
+		 .5,  .5,   0,     1,  0,  0,
+		 .5, -.5,   0,     0,  1,  0,
+		-.5, -.5,   0,     0,  0,  1,
+		-.5,  .5,   0,     1,  0,  1,
 	}
 	indices := [?]u32 {
-		3, 2, 1, // He put: 1, 2, 3		Isn't this clockwise? How does it work?!
-		3, 1, 0, // He put: 0, 1, 3		But counter-clockwise
+		3, 2, 1,
+		3, 1, 0,
 	}
 
 	vbo, vao, ebo: u32 = ---, ---, ---
