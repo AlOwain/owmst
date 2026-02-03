@@ -6,17 +6,24 @@ import "vendor:glfw"
 import "core:c"
 import "core:fmt"
 
-GL_MAJOR_VERSION : c.int : 3
-GL_MINOR_VERSION :: 3
-
-SCREEN_WIDTH :: 400
-SCREEN_HEIGHT :: 400
+CONFIG :: struct {
+	debug: bool,
+	gl_version: [2]c.int,
+	window: [2]i32,
+}{
+	debug = false,
+	gl_version = {3, 3},
+	window = [2]i32{400, 400},
+}
 
 running := false
 
 vertex_shader_src := #load("./shaders/0.vert", cstring)
-fragment_shader_src := #load("./shaders/1.frag", cstring)
-dbg_fragment_shader_src := #load("./shaders/dbg.frag", cstring)
+when !CONFIG.debug {
+	fragment_shader_src := #load("./shaders/1.frag", cstring)
+} else {
+	fragment_shader_src := #load("./shaders/dbg.frag", cstring)
+}
 
 main :: proc() {
 	if !glfw.Init() {
@@ -27,13 +34,13 @@ main :: proc() {
 
     glfw.SetErrorCallback(cb_error)
 	glfw.WindowHint(glfw.RESIZABLE, 1)
-	glfw.WindowHint(glfw.CONTEXT_VERSION_MAJOR, GL_MAJOR_VERSION)
-	glfw.WindowHint(glfw.CONTEXT_VERSION_MINOR, GL_MINOR_VERSION)
+	glfw.WindowHint(glfw.CONTEXT_VERSION_MAJOR, CONFIG.gl_version[0])
+	glfw.WindowHint(glfw.CONTEXT_VERSION_MINOR, CONFIG.gl_version[1])
 	glfw.WindowHint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
 
-	window := glfw.CreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "OWMst", nil, nil)
+	window := glfw.CreateWindow(CONFIG.window.x, CONFIG.window.y, "OWMst", nil, nil)
 
-	if nil == window {
+	if window == nil {
 		fmt.println("NO WINDOW")
 		return
 	}
@@ -46,29 +53,28 @@ main :: proc() {
 	glfw.SetKeyCallback(window, cb_input)
 	glfw.SetFramebufferSizeCallback(window, cb_window_resize)
 
-	gl.load_up_to(int(GL_MAJOR_VERSION), GL_MINOR_VERSION, glfw.gl_set_proc_address)
+	gl.load_up_to(int(CONFIG.gl_version[0]), int(CONFIG.gl_version[1]), glfw.gl_set_proc_address)
 	{
 		width, height := glfw.GetFramebufferSize(window)
 		gl.Viewport(0, 0, width, height)
 	}
 
 	shader: u32 = create_shader(&vertex_shader_src, &fragment_shader_src)
-	dbg_shader: u32 = create_shader(&vertex_shader_src, &dbg_fragment_shader_src)
-
-	vertex_data := [?]f32 {
-		//X	   Y    Z      R   G  B
-		 .5,  .5,   0,     1,  0,  0,
-		 .5, -.5,   0,     0,  1,  0,
-		-.5, -.5,   0,     0,  0,  1,
-		-.5,  .5,   0,     1,  0,  1,
-	}
-	indices := [?]u32 {
-		3, 2, 1,
-		3, 1, 0,
-	}
 
 	vbo, vao, ebo: u32 = ---, ---, ---
 	{
+		vertex_data := [?]f32 {
+			//X	   Y    Z      R   G  B
+			 .5,  .5,   0,     1,  0,  0, // Bottom Left
+			 .5, -.5,   0,     0,  1,  0, // Bottom Right
+			-.5, -.5,   0,     0,  0,  1, // Top Right
+			-.5,  .5,   0,     1,  0,  1, // Top Left
+		}
+		indices := [?]u32 {
+			3, 2, 1, // TL -> TR -> BR
+			3, 1, 0, // TL -> BR -> BL
+		}
+
 		gl.GenVertexArrays(1, &vao)
 		gl.GenBuffers(1, &vbo)
 		gl.GenBuffers(1, &ebo)
@@ -87,6 +93,17 @@ main :: proc() {
 		gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 6 * size_of(f32), 0)
 		gl.EnableVertexAttribArray(0)
 
+		when CONFIG.debug {
+		// TODO: Look into replacing the fixed number location with a name to aPos and aColor
+		// aPos := gl.GetUniformLocation(shader, "aPos") // or similar
+		// gl.VertexAttribPointer(aPos, 3, gl.FLOAT, false, 6 * size_of(f32), 3 * size_of(f32))
+		//
+		// aColor := gl.GetUniformLocation(shader, "aColor") // or similar
+		// gl.VertexAttribPointer(aColor, 3, gl.FLOAT, false, 6 * size_of(f32), 3 * size_of(f32))
+		//
+		// assert(aPos == 0 && aColor == 1)
+		// TODO: Look into using DSAs (OpenGL version ≥ 4.5) to remove all the binding.
+		}
 		gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 6 * size_of(f32), 3 * size_of(f32))
 		gl.EnableVertexAttribArray(1)
 	}
@@ -94,13 +111,19 @@ main :: proc() {
 	defer gl.DeleteBuffers(1, &ebo)
 	defer gl.DeleteVertexArrays(1, &vao)
 
+	when CONFIG.debug {
+		ret: i32 = ---
+		gl.GetIntegerv(gl.MAX_VERTEX_ATTRIBS, &ret)
+		fmt.println("MAX_VERTEX_ATTRIBS:", ret)
+	}
 	for !glfw.WindowShouldClose(window) && running {
+		gl.UseProgram(shader)
+
 		glfw.PollEvents()
 		input(&window)
 
 		gl.ClearColor(1.0, 1.0, 1.0, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
-		gl.UseProgram(shader)
 
 		{
 			gl.BindVertexArray(vao)
@@ -109,7 +132,7 @@ main :: proc() {
 			gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
 			defer gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
 
-			gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil);
+			gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
 		}
 
 		glfw.SwapBuffers(window)
