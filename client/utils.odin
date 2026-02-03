@@ -1,11 +1,9 @@
 package client
 
 import gl "vendor:OpenGL"
-import "vendor:glfw"
 
 import "core:fmt"
 import "core:os"
-import "core:strings"
 
 gl_check_errors :: proc (id, error_type: u32) {
 	success: i32 = ---
@@ -41,8 +39,6 @@ shader_compile :: proc (shader_src: ^cstring, shader_type: u32) -> u32 {
 	return shader
 }
 
-// Maybe if it gets so bad,
-// we could cache the results of `shader_compile`
 create_shader :: proc (vsrc: ^cstring, fsrc: ^cstring) -> u32 {
 	vsdr := shader_compile(vsrc, gl.VERTEX_SHADER)
 	defer gl.DeleteShader(vsdr)
@@ -53,6 +49,9 @@ create_shader :: proc (vsrc: ^cstring, fsrc: ^cstring) -> u32 {
 	shader := gl.CreateProgram()
 	gl.AttachShader(shader, vsdr)
 	gl.AttachShader(shader, fsdr)
+
+	// NOTE(critical): This program depends on having a static shader linked and compiled once.
+	// It can not work with dynamic shaders. There are static uniform locations.
 	gl.LinkProgram(shader)
 	gl_check_errors(shader, gl.LINK_STATUS)
 
