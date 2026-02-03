@@ -5,7 +5,6 @@ import "vendor:glfw"
 
 import "core:c"
 import "core:fmt"
-import "core:math"
 
 GL_MAJOR_VERSION : c.int : 3
 GL_MINOR_VERSION :: 3
