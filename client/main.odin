@@ -1,6 +1,7 @@
 package client
 
 import gl "vendor:OpenGL"
+import stbi "vendor:stb/image"
 import "vendor:glfw"
 
 import "core:c"
@@ -70,19 +71,33 @@ main :: proc() {
 
 	shader: u32 = create_shader(&vertex_shader_src, &fragment_shader_src)
 
-	vbo, vao, ebo: u32 = ---, ---, ---
+	vbo, vao, ebo, wall: u32 = ---, ---, ---, ---
 	{
 		vertex_data := [?]f32 {
 			//X	   Y    Z      R   G  B
-			 .5,  .5,   0,     1,  0,  0, // Bottom Left
-			 .5, -.5,   0,     0,  1,  0, // Bottom Right
-			-.5, -.5,   0,     0,  0,  1, // Top Right
-			-.5,  .5,   0,     1,  0,  1, // Top Left
+			 .5,  .5,   0,     1,  0,  0,	1, 1, // Bottom Left
+			 .5, -.5,   0,     0,  1,  0,	1, 0, // Bottom Right
+			-.5, -.5,   0,     0,  0,  1,	0, 0, // Top Right
+			-.5,  .5,   0,     1,  1,  0,	0, 1, // Top Left
 		}
 		indices := [?]u32 {
 			3, 2, 1, // TL -> TR -> BR
 			3, 1, 0, // TL -> BR -> BL
 		}
+
+		x, y, channels: i32 = ---, ---, ---
+		texture := stbi.load("wall.jpg", &x, &y, &channels, 0)
+		defer stbi.image_free(texture)
+
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT)
+		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT)
+
+		gl.GenTextures(1, &wall)
+		gl.BindTexture(gl.TEXTURE_2D, wall)
+		defer gl.BindTexture(gl.TEXTURE_2D, 0)
+
+		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, x, y, 0, gl.RGB, gl.UNSIGNED_BYTE, texture)
+		gl.GenerateMipmap(gl.TEXTURE_2D)
 
 		gl.GenVertexArrays(1, &vao)
 		gl.GenBuffers(1, &vbo)
@@ -99,8 +114,14 @@ main :: proc() {
 		defer gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
 		gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, size_of(indices), &indices, gl.STATIC_DRAW)
 
-		gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 6 * size_of(f32), 0)
+		gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 8 * size_of(f32), 0)
 		gl.EnableVertexAttribArray(0)
+
+		gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 8 * size_of(f32), 3 * size_of(f32))
+		gl.EnableVertexAttribArray(1)
+
+		gl.VertexAttribPointer(2, 2, gl.FLOAT, false, 8 * size_of(f32), 6 * size_of(f32))
+		gl.EnableVertexAttribArray(2)
 
 		when CONFIG.debug {
 		// TODO: Look into replacing the fixed number location with a name to aPos and aColor
@@ -112,13 +133,14 @@ main :: proc() {
 		//
 		// assert(aPos == 0 && aColor == 1)
 		// TODO: Look into using DSAs (OpenGL version ≥ 4.5) to remove all the binding.
+			fmt.println(texture != nil, x, y, channels, wall)
 		}
-		gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 6 * size_of(f32), 3 * size_of(f32))
-		gl.EnableVertexAttribArray(1)
+
 	}
 	defer gl.DeleteBuffers(1, &vbo)
 	defer gl.DeleteBuffers(1, &ebo)
 	defer gl.DeleteVertexArrays(1, &vao)
+	defer gl.DeleteTextures(1, &wall)
 
 	scrshake := Screenshake {
 		uniform_location = gl.GetUniformLocation(shader, "screenshake"),
@@ -153,6 +175,9 @@ main :: proc() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
 		{
+			gl.BindTexture(gl.TEXTURE_2D, wall)
+			defer gl.BindTexture(gl.TEXTURE_2D, 0)
+
 			gl.BindVertexArray(vao)
 			defer gl.BindVertexArray(0)
 
