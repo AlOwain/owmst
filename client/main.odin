@@ -30,7 +30,6 @@ when !CONFIG.debug {
 
 main :: proc() {
 	window := create_window()
-	defer glfw.Terminate()
 
 	shader: u32 = create_shader(&vertex_shader_src, &fragment_shader_src)
 
@@ -100,40 +99,29 @@ main :: proc() {
 		}
 
 	}
-	defer gl.DeleteBuffers(1, &vbo)
-	defer gl.DeleteBuffers(1, &ebo)
-	defer gl.DeleteVertexArrays(1, &vao)
-	defer gl.DeleteTextures(1, &wall)
 
 	when CONFIG.debug {
 		ret: i32 = ---
 		gl.GetIntegerv(gl.MAX_VERTEX_ATTRIBS, &ret)
 		fmt.println("MAX_VERTEX_ATTRIBS:", ret)
 	}
-	for !glfw.WindowShouldClose(window) && running {
-		gl.UseProgram(shader)
+	{
+		gl.BindTexture(gl.TEXTURE_2D, wall)
+		gl.BindVertexArray(vao)
+		gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
+		defer {
+			gl.BindTexture(gl.TEXTURE_2D, 0)
+			gl.BindVertexArray(0)
+			gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
 
-		glfw.PollEvents()
-		// Remove this, make cb_input call instead
-		input(&window)
-
-		gl.ClearColor(1.0, 1.0, 1.0, 1.0)
-		gl.Clear(gl.COLOR_BUFFER_BIT)
-
-		{
-			gl.BindTexture(gl.TEXTURE_2D, wall)
-			defer gl.BindTexture(gl.TEXTURE_2D, 0)
-
-			gl.BindVertexArray(vao)
-			defer gl.BindVertexArray(0)
-
-			gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
-			defer gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
-
-			gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
+			gl.DeleteBuffers(1, &vbo)
+			gl.DeleteBuffers(1, &ebo)
+			gl.DeleteVertexArrays(1, &vao)
+			gl.DeleteTextures(1, &wall)
 		}
 
-		glfw.SwapBuffers(window)
+		gl.UseProgram(shader)
+		main_loop(shader, &window)
 	}
 
 	close_window(window)
