@@ -29,38 +29,8 @@ when !CONFIG.debug {
 }
 
 main :: proc() {
-	if !glfw.Init() {
-		fmt.println("GLFW is a failure.")
-		return
-	}
+	window := create_window()
 	defer glfw.Terminate()
-
-    glfw.SetErrorCallback(cb_error)
-	glfw.WindowHint(glfw.RESIZABLE, 1)
-	glfw.WindowHint(glfw.CONTEXT_VERSION_MAJOR, CONFIG.gl_version[0])
-	glfw.WindowHint(glfw.CONTEXT_VERSION_MINOR, CONFIG.gl_version[1])
-	glfw.WindowHint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
-
-	window := glfw.CreateWindow(CONFIG.window.x, CONFIG.window.y, "OWMst", nil, nil)
-
-	if window == nil {
-		fmt.println("NO WINDOW")
-		return
-	}
-	defer glfw.DestroyWindow(window)
-	running = true
-
-	glfw.MakeContextCurrent(window)
-	glfw.SwapInterval(1)
-
-	glfw.SetKeyCallback(window, cb_input)
-	glfw.SetFramebufferSizeCallback(window, cb_window_resize)
-
-	gl.load_up_to(int(CONFIG.gl_version[0]), int(CONFIG.gl_version[1]), glfw.gl_set_proc_address)
-	{
-		width, height := glfw.GetFramebufferSize(window)
-		gl.Viewport(0, 0, width, height)
-	}
 
 	shader: u32 = create_shader(&vertex_shader_src, &fragment_shader_src)
 
@@ -165,4 +135,6 @@ main :: proc() {
 
 		glfw.SwapBuffers(window)
 	}
+
+	close_window(window)
 }
