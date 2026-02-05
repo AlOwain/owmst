@@ -1,13 +1,13 @@
 package client
 
+import "vendor:glfw"
 import gl "vendor:OpenGL"
 import stbi "vendor:stb/image"
-import "vendor:glfw"
 
 import "core:c"
 import "core:fmt"
-import "core:time"
 import "core:math/rand"
+import "core:time"
 
 CONFIG :: struct {
 	debug: bool,
