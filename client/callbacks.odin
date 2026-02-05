@@ -22,7 +22,6 @@ cb_input :: proc "c" (window: glfw.WindowHandle, key, scancode, action, mods: i3
 	switch key {
 	case glfw.KEY_ESCAPE:
 		running = false
-		os.exit(1)
 	case glfw.KEY_F2:
 		wireframe_rendering = !wireframe_rendering
 		if wireframe_rendering {

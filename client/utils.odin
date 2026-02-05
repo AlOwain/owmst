@@ -23,8 +23,7 @@ gl_check_errors :: proc (id, error_type: u32) {
 	if success != 1 {
 		fmt.printfln("%s failed. Error message:", task)
 		fmt.println(string(info_log[:]))
-		// Consider removing the exit
-		os.exit(1)
+		running = false
 	}
 }
 
