@@ -19,13 +19,6 @@ CONFIG :: struct {
 	window = [2]i32{400, 400},
 }
 
-Screenshake :: struct {
-	uniform_location: i32,
-	multiplier: f32,
-	interval: time.Duration,
-	stopwatch: time.Stopwatch,
-}
-
 running := false
 
 vertex_shader_src := #load("./shaders/0.vert", cstring)
@@ -142,14 +135,6 @@ main :: proc() {
 	defer gl.DeleteVertexArrays(1, &vao)
 	defer gl.DeleteTextures(1, &wall)
 
-	scrshake := Screenshake {
-		uniform_location = gl.GetUniformLocation(shader, "screenshake"),
-		multiplier = 0.00,
-		interval = 20 * time.Millisecond,
-		stopwatch = time.Stopwatch{}
-	}
-	assert(scrshake.uniform_location != -1)
-
 	when CONFIG.debug {
 		ret: i32 = ---
 		gl.GetIntegerv(gl.MAX_VERTEX_ATTRIBS, &ret)
@@ -159,17 +144,8 @@ main :: proc() {
 		gl.UseProgram(shader)
 
 		glfw.PollEvents()
+		// Remove this, make cb_input call instead
 		input(&window)
-
-		if !scrshake.stopwatch.running || time.stopwatch_duration(scrshake.stopwatch) >= scrshake.interval {
-			scrshake_pos := [2]f32{
-				scrshake.multiplier * (rand.float32() * 2.0 - 1.0),
-				scrshake.multiplier * (rand.float32() * 2.0 - 1.0)
-			}
-			gl.Uniform2f(scrshake.uniform_location, scrshake_pos.x, scrshake_pos.y)
-			time.stopwatch_reset(&scrshake.stopwatch)
-			time.stopwatch_start(&scrshake.stopwatch)
-		}
 
 		gl.ClearColor(1.0, 1.0, 1.0, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
