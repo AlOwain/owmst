@@ -121,7 +121,7 @@ main :: proc() {
 		}
 
 		gl.UseProgram(shader)
-		main_loop(shader, &window)
+		main_loop(shader, window)
 	}
 
 	close_window(window)
