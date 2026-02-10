@@ -14,7 +14,7 @@ CONFIG :: struct {
 	gl_version: [2]c.int,
 	window: [2]i32,
 }{
-	debug = false,
+	debug = true,
 	gl_version = {3, 3},
 	window = [2]i32{400, 400},
 }
@@ -22,17 +22,14 @@ CONFIG :: struct {
 running := false
 
 vertex_shader_src := #load("./shaders/0.vert", cstring)
-when !CONFIG.debug {
-	fragment_shader_src := #load("./shaders/1.frag", cstring)
-} else {
-	fragment_shader_src := #load("./shaders/dbg.frag", cstring)
-}
+fragment_shader_src := #load("./shaders/1.frag", cstring)
 
 main :: proc() {
 	window := create_window()
 
 	shader: u32 = create_shader(&vertex_shader_src, &fragment_shader_src)
 
+	// FIXME: Something should be done about this.
 	vbo, vao, ebo, wall: u32 = ---, ---, ---, ---
 	{
 		vertex_data := [?]f32 {
@@ -85,7 +82,6 @@ main :: proc() {
 		gl.VertexAttribPointer(2, 2, gl.FLOAT, false, 8 * size_of(f32), 6 * size_of(f32))
 		gl.EnableVertexAttribArray(2)
 
-		when CONFIG.debug {
 		// TODO: Look into replacing the fixed number location with a name to aPos and aColor
 		// aPos := gl.GetUniformLocation(shader, "aPos") // or similar
 		// gl.VertexAttribPointer(aPos, 3, gl.FLOAT, false, 6 * size_of(f32), 3 * size_of(f32))
@@ -95,9 +91,6 @@ main :: proc() {
 		//
 		// assert(aPos == 0 && aColor == 1)
 		// TODO: Look into using DSAs (OpenGL version ≥ 4.5) to remove all the binding.
-			fmt.println(texture != nil, x, y, channels, wall)
-		}
-
 	}
 
 	when CONFIG.debug {
@@ -109,7 +102,7 @@ main :: proc() {
 		gl.BindTexture(gl.TEXTURE_2D, wall)
 		gl.BindVertexArray(vao)
 		gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
-		defer {
+		defer if !CONFIG.debug {
 			gl.BindTexture(gl.TEXTURE_2D, 0)
 			gl.BindVertexArray(0)
 			gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
