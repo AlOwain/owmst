@@ -2,7 +2,6 @@ package client
 
 import "vendor:glfw"
 import gl "vendor:OpenGL"
-import stbi "vendor:stb/image"
 
 import "core:c"
 import "core:fmt"
@@ -30,7 +29,7 @@ main :: proc() {
 	shader: u32 = create_shader(&vertex_shader_src, &fragment_shader_src)
 
 	// FIXME: Something should be done about this.
-	vbo, vao, ebo, wall: u32 = ---, ---, ---, ---
+	vbo, vao, ebo, wall, face: u32 = ---, ---, ---, ---, ---
 	{
 		vertex_data := [?]f32 {
 			//X	   Y    Z      R   G  B
@@ -44,19 +43,8 @@ main :: proc() {
 			3, 1, 0, // TL -> BR -> BL
 		}
 
-		x, y, channels: i32 = ---, ---, ---
-		texture := stbi.load("wall.jpg", &x, &y, &channels, 0)
-		defer stbi.image_free(texture)
-
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT)
-		gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT)
-
-		gl.GenTextures(1, &wall)
-		gl.BindTexture(gl.TEXTURE_2D, wall)
-		defer gl.BindTexture(gl.TEXTURE_2D, 0)
-
-		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, x, y, 0, gl.RGB, gl.UNSIGNED_BYTE, texture)
-		gl.GenerateMipmap(gl.TEXTURE_2D)
+		wall = create_texture("wall.jpg")
+		face = create_texture("awesomeface.png")
 
 		gl.GenVertexArrays(1, &vao)
 		gl.GenBuffers(1, &vbo)
@@ -99,10 +87,16 @@ main :: proc() {
 		fmt.println("MAX_VERTEX_ATTRIBS:", ret)
 	}
 	{
+		gl.ActiveTexture(gl.TEXTURE0);
 		gl.BindTexture(gl.TEXTURE_2D, wall)
+		gl.ActiveTexture(gl.TEXTURE1);
+		gl.BindTexture(gl.TEXTURE_2D, face)
+
 		gl.BindVertexArray(vao)
 		gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
 		defer if !CONFIG.debug {
+			gl.ActiveTexture(gl.TEXTURE0);
+
 			gl.BindTexture(gl.TEXTURE_2D, 0)
 			gl.BindVertexArray(0)
 			gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
@@ -114,6 +108,9 @@ main :: proc() {
 		}
 
 		gl.UseProgram(shader)
+		gl.Uniform1i(gl.GetUniformLocation(shader, "wall"), 0);
+		gl.Uniform1i(gl.GetUniformLocation(shader, "face"), 1);
+
 		main_loop(shader, window)
 	}
 
