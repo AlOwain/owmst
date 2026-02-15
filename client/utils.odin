@@ -93,3 +93,20 @@ create_texture :: proc(filename: cstring) -> u32 {
 
 	return texture
 }
+
+vertex_attributes :: proc(shader: u32, names: []cstring, sizes: []i32) {
+	assert(len(names) == len(sizes))
+
+	stride: i32 = 0
+	for i in sizes {
+		stride += i * size_of(f32)
+	}
+
+	offset: uintptr = 0
+	for i := 0; i < len(names); i += 1 {
+		attrib_loc: u32 = cast(u32)gl.GetAttribLocation(shader, names[i])
+		gl.VertexAttribPointer(attrib_loc, sizes[i], gl.FLOAT, false, stride, offset)
+		gl.EnableVertexAttribArray(attrib_loc)
+		offset += cast(uintptr)sizes[i] * size_of(f32)
+	}
+}

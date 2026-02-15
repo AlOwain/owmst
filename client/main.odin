@@ -28,7 +28,6 @@ main :: proc() {
 
 	shader: u32 = create_shader(&vertex_shader_src, &fragment_shader_src)
 
-	// FIXME: Something should be done about this.
 	vbo, vao, ebo, wall, face: u32 = ---, ---, ---, ---, ---
 	{
 		vertex_data := [?]f32 {
@@ -61,24 +60,7 @@ main :: proc() {
 		defer gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, 0)
 		gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, size_of(indices), &indices, gl.STATIC_DRAW)
 
-		gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 8 * size_of(f32), 0)
-		gl.EnableVertexAttribArray(0)
-
-		gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 8 * size_of(f32), 3 * size_of(f32))
-		gl.EnableVertexAttribArray(1)
-
-		gl.VertexAttribPointer(2, 2, gl.FLOAT, false, 8 * size_of(f32), 6 * size_of(f32))
-		gl.EnableVertexAttribArray(2)
-
-		// TODO: Look into replacing the fixed number location with a name to aPos and aColor
-		// aPos := gl.GetUniformLocation(shader, "aPos") // or similar
-		// gl.VertexAttribPointer(aPos, 3, gl.FLOAT, false, 6 * size_of(f32), 3 * size_of(f32))
-		//
-		// aColor := gl.GetUniformLocation(shader, "aColor") // or similar
-		// gl.VertexAttribPointer(aColor, 3, gl.FLOAT, false, 6 * size_of(f32), 3 * size_of(f32))
-		//
-		// assert(aPos == 0 && aColor == 1)
-		// TODO: Look into using DSAs (OpenGL version ≥ 4.5) to remove all the binding.
+		vertex_attributes(shader, {"aPos", "aColor", "aTexCoord"}, {3, 3, 2})
 	}
 
 	when CONFIG.debug {
@@ -86,6 +68,7 @@ main :: proc() {
 		gl.GetIntegerv(gl.MAX_VERTEX_ATTRIBS, &ret)
 		fmt.println("MAX_VERTEX_ATTRIBS:", ret)
 	}
+
 	{
 		gl.ActiveTexture(gl.TEXTURE0);
 		gl.BindTexture(gl.TEXTURE_2D, wall)
